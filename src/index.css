@@ -1,0 +1,416 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355 7% 97%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 76% 36%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
+  }
+}
+
+@layer components {
+  /* Mobile-First Base Layout */
+  .trading-layout-container {
+    @apply flex h-screen overflow-hidden;
+    height: 100vh;
+    height: 100svh; /* Small viewport height for better mobile support */
+  }
+
+  /* Mobile-First Grid - Start with single column */
+  .trading-grid {
+    @apply grid bg-border gap-px h-full;
+    grid-template-areas:
+      'header'
+      'main';
+    grid-template-rows: 64px 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  /* Tablet Layout - 768px and up */
+  @media (min-width: 768px) {
+    .trading-grid {
+      grid-template-areas:
+        'header header'
+        'main rightbar';
+      grid-template-columns: 1fr minmax(280px, 35%);
+      grid-template-rows: 64px 1fr;
+    }
+  }
+
+  /* Medium Desktop Layout - 1024px and up */
+  @media (min-width: 1024px) {
+    .trading-grid {
+      grid-template-areas:
+        'header header header'
+        'sidebar main rightbar';
+      grid-template-columns: minmax(260px, 18%) 1fr minmax(300px, 22%);
+      grid-template-rows: 64px 1fr;
+    }
+  }
+
+  /* Large Desktop Layout - 1280px and up */
+  @media (min-width: 1280px) {
+    .trading-grid {
+      grid-template-columns: minmax(280px, 20%) 1fr minmax(320px, 24%);
+    }
+  }
+
+  /* Extra Large Desktop Layout - 1536px and up */
+  @media (min-width: 1536px) {
+    .trading-grid {
+      grid-template-columns: minmax(320px, 22%) 1fr minmax(360px, 26%);
+    }
+  }
+
+  .trading-header {
+    grid-area: header;
+    background: hsl(var(--background));
+  }
+
+  .trading-sidebar {
+    grid-area: sidebar;
+    background: hsl(var(--background));
+    overflow-y: auto;
+    /* Hidden on mobile and tablet, visible on desktop 1024px+ */
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .trading-sidebar {
+      display: block;
+    }
+  }
+
+  .trading-main {
+    grid-area: main;
+    background: hsl(var(--background));
+    @apply flex flex-col overflow-hidden;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .trading-rightbar {
+    grid-area: rightbar;
+    background: hsl(var(--background));
+    @apply flex flex-col gap-px overflow-hidden;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .chart-container {
+    position: relative;
+    flex: 1;
+    background: hsl(var(--card));
+    overflow: hidden;
+    min-height: 300px;
+    height: 100%;
+    container-type: size;
+    container-name: chart;
+  }
+
+  .order-book-container {
+    background: hsl(var(--card));
+    overflow: hidden;
+    flex: 1;
+    min-height: 350px;
+    max-height: 60vh;
+    container-type: size;
+    container-name: orderbook;
+  }
+
+  .trade-panel-container {
+    background: hsl(var(--card));
+    overflow: hidden;
+    flex: 1;
+    min-height: 300px;
+    max-height: 40vh;
+    container-type: size;
+    container-name: tradepanel;
+  }
+
+  .positions-container {
+    background: hsl(var(--card));
+    height: 250px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* Enhanced responsive adjustments */
+  @media (max-width: 1023px) {
+    .trading-rightbar {
+      grid-template-rows: minmax(250px, 50%) minmax(200px, auto);
+    }
+    .order-book-container {
+      min-height: 250px;
+    }
+    .trade-panel-container {
+      min-height: 200px;
+      max-height: 500px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .trading-main {
+      @apply block;
+    }
+  }
+}
+
+.price-up {
+  color: #10b981;
+}
+
+.price-down {
+  color: #ef4444;
+}
+
+.price-neutral {
+  color: #6b7280;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted)) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
+}
+
+/* Additional responsive utilities */
+@layer utilities {
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Enhanced mobile breakpoints */
+@media (max-width: 480px) {
+  .trading-layout-container {
+    @apply overflow-x-hidden;
+  }
+
+  .chart-container {
+    min-height: 250px;
+  }
+
+  .order-book-container {
+    min-height: 300px;
+  }
+
+  .trade-panel-container {
+    min-height: 250px;
+    max-height: none;
+  }
+}
+
+/* Premium Touch Interactions & Accessibility */
+@layer utilities {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  .smooth-interaction {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Improve touch targets and interactions */
+button,
+[role='button'],
+input[type='button'],
+input[type='submit'],
+.clickable {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced button interactions */
+button:active,
+[role='button']:active {
+  transform: scale(0.98);
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling for all scrollable areas */
+.scrollable,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile specific optimizations */
+@media (max-width: 767.98px) {
+  .trading-grid {
+    gap: 0;
+  }
+
+  .trading-main {
+    overflow: hidden;
+  }
+
+  /* Larger touch targets on mobile */
+  button,
+  [role='button'] {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Container Query Responsive Behavior */
+@container chart (max-width: 400px) {
+  .chart-header h3 {
+    font-size: 0.875rem;
+  }
+
+  .chart-controls {
+    padding: 0.5rem;
+  }
+
+  .chart-intervals .tab-trigger {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+@container orderbook (max-height: 400px) {
+  .order-row {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .order-book-header {
+    padding: 0.5rem;
+  }
+}
+
+@container tradepanel (max-width: 300px) {
+  .trade-form-input {
+    font-size: 0.875rem;
+  }
+
+  .trade-button {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Mobile specific height fixes - Align with Tailwind md: breakpoint */
+@media (max-width: 767.98px) {
+  .trading-layout-container {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+
+  /* Ensure full height utilization on mobile */
+  .chart-container,
+  .order-book-container,
+  .trade-panel-container {
+    height: 100%;
+    max-height: none;
+  }
+}
+
+/* Premium Polish & Animations */
+@layer components {
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

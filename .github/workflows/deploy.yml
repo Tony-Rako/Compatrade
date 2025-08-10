@@ -1,0 +1,77 @@
+name: Deploy Compatrade App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker Image
+      run: |
+        docker build -t compatrade-app:${{ github.sha }} .
+        docker tag compatrade-app:${{ github.sha }} compatrade-app:latest
+    
+    - name: Save Docker Image
+      run: |
+        docker save compatrade-app:latest | gzip > compatrade-app.tar.gz
+    
+    - name: Copy image to VPS
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        source: "compatrade-app.tar.gz"
+        target: "/tmp/"
+    
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          echo "Loading new Docker image..."
+          docker load < /tmp/compatrade-app.tar.gz
+          
+          echo "Stopping old container..."
+          docker stop compatrade-app-production 2>/dev/null || true
+          docker rm compatrade-app-production 2>/dev/null || true
+          
+          echo "Starting new container with environment variables..."
+          docker run -d \
+            --name compatrade-app-production \
+            --network root_web \
+            --restart unless-stopped \
+            -e "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+            -e "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" \
+            -e "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" \
+            -e "NEXTAUTH_URL=https://compatrade.your-domain.com" \
+            -e "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            -e "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" \
+            -e "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" \
+            -e "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
+            --label "traefik.enable=true" \
+            --label "traefik.http.routers.compatrade-http.rule=Host(\`compatrade.your-domain.com\`)" \
+            --label "traefik.http.routers.compatrade-http.entrypoints=web" \
+            --label "traefik.http.routers.compatrade-https.rule=Host(\`compatrade.your-domain.com\`)" \
+            --label "traefik.http.routers.compatrade-https.entrypoints=websecure" \
+            --label "traefik.http.routers.compatrade-https.tls.certresolver=myresolver" \
+            --label "traefik.http.services.compatrade.loadbalancer.server.port=3000" \
+            compatrade-app:latest
+          
+          echo "Cleaning up..."
+          rm -f /tmp/compatrade-app.tar.gz
+          docker image prune -f
+          
+          echo "Deployment completed!"
