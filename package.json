@@ -79,11 +79,7 @@
     "vitest": "3.2.4"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "next lint --fix --file",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
+    "*.{js,jsx,ts,tsx,json,css,md}": [
       "prettier --write"
     ]
   },
